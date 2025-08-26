@@ -5,40 +5,54 @@ class PC_Card:
         self.url = url
         self.nome = nome
         self.gpu = gpu
-        self.data_ocupado = None
+        self.agendamentos = []  # Agora é uma lista de tuplas (data_inicio, data_fim)
         self.em_manutencao = False
 
     def agendar_uso(self, data_inicio, data_fim):
-        self.data_ocupado = [data_inicio, data_fim]
+        # O agendamento deve ser uma tupla para facilitar a ordenação e salvamento
+        self.agendamentos.append((data_inicio, data_fim))
+        self.agendamentos.sort() # Mantém os agendamentos em ordem cronológica
 
     def esta_ocupado(self):
-        if self.data_ocupado and len(self.data_ocupado) == 2:
-            data_inicio, data_fim = self.data_ocupado
-            agora = datetime.datetime.now()
-            uma_hora = datetime.timedelta(hours=1)
+        """Verifica o status atual do PC e o próximo agendamento."""
+        agora = datetime.datetime.now()
+        uma_hora = datetime.timedelta(hours=1)
+        
+        proximo_agendamento = None
+        for inicio, fim in self.agendamentos:
+            # 1. Checa se o PC está ocupado agora
+            if inicio <= agora < fim:
+                return "ocupado", "Ocupado agora" # Card vermelho
 
-            if agora > data_fim:
-                self.data_ocupado = None
-                return "disponivel"
-            elif data_inicio <= agora < data_fim:
-                return "ocupado"
-            elif data_inicio - agora <= uma_hora:
-                return "quase_ocupado"
-        return "disponivel"
+            # 2. Encontra o próximo agendamento válido no futuro
+            if inicio > agora and (proximo_agendamento is None or inicio < proximo_agendamento[0]):
+                proximo_agendamento = (inicio, fim)
+        
+        # 3. Define a cor com base no próximo agendamento
+        if proximo_agendamento:
+            proximo_inicio = proximo_agendamento[0]
+            if proximo_inicio - agora <= uma_hora:
+                return "quase_ocupado", f"Ocupado em {proximo_inicio.strftime('%H:%M')}" # Card amarelo
+            else:
+                return "disponivel", f"Próximo em {proximo_inicio.strftime('%d/%m %H:%M')}" # Card verde
+        
+        return "disponivel", "N/A" # Card verde
 
     def to_dict(self):
         return {
             "url": self.url,
             "nome": self.nome,
             "gpu": self.gpu,
-            "data_ocupado": [d.isoformat() for d in self.data_ocupado] if self.data_ocupado else None,
+            "agendamentos": [(d[0].isoformat(), d[1].isoformat()) for d in self.agendamentos],
             "em_manutencao": self.em_manutencao
         }
 
     @classmethod
     def from_dict(cls, data):
-        data_ocupado_dt = [datetime.datetime.fromisoformat(d) for d in data["data_ocupado"]] if data["data_ocupado"] else None
         pc = cls(data["url"], data["nome"], data["gpu"])
-        pc.data_ocupado = data_ocupado_dt
+        for inicio_str, fim_str in data["agendamentos"]:
+            inicio = datetime.datetime.fromisoformat(inicio_str)
+            fim = datetime.datetime.fromisoformat(fim_str)
+            pc.agendar_uso(inicio, fim)
         pc.em_manutencao = data["em_manutencao"]
         return pc

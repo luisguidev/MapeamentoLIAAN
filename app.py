@@ -1,59 +1,22 @@
 import streamlit as st
+
 import datetime
 import json
 import os
-from card import PC_Card # Certifique-se de que a classe PC_Card está neste arquivo ou importada corretamente
 
-# --- FUNÇÕES DE PERSISTÊNCIA ---
+from card import PC_Card 
+from functions import *
+
 DATA_FILE = "pcs_data.json"
 
-def carregar_dados():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            try:
-                data = json.load(f)
-                return [PC_Card.from_dict(item) for item in data]
-            except (json.JSONDecodeError, KeyError):
-                return []
-    return []
-
-def salvar_dados(pcs):
-    with open(DATA_FILE, "w") as f:
-        json.dump([pc.to_dict() for pc in pcs], f, indent=4)
-
-# --- FUNÇÕES AUXILIARES PARA MANIPULAÇÃO ---
-def adicionar_pc(url, nome, gpu):
-    novo_pc = PC_Card(url, nome, gpu)
-    st.session_state.pcs.append(novo_pc)
-    salvar_dados(st.session_state.pcs)
-
-def deletar_pc(indice):
-    del st.session_state.pcs[indice]
-    salvar_dados(st.session_state.pcs)
-    st.rerun()
-
-def toggle_manutencao(indice):
-    st.session_state.pcs[indice].em_manutencao = not st.session_state.pcs[indice].em_manutencao
-    salvar_dados(st.session_state.pcs)
-
-def abrir_form_agendar(indice):
-    st.session_state.agendando_pc_indice = indice
-    st.session_state.mostrar_form_agendar = True
-
-def fechar_form_agendar():
-    st.session_state.mostrar_form_agendar = False
-
-# --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(layout="wide")
 st.title("Gerenciamento de PCs")
 
-# --- INICIALIZAÇÃO DO ESTADO DA SESSÃO ---
 if "pcs" not in st.session_state:
     st.session_state.pcs = carregar_dados()
 if "mostrar_form_agendar" not in st.session_state:
     st.session_state.mostrar_form_agendar = False
 
-# --- INTERFACE DE CRIAÇÃO ---
 with st.expander("Adicionar Novo PC"):
     with st.form("form_novo_pc", clear_on_submit=True):
         url = st.text_input("URL do PC")
@@ -68,8 +31,8 @@ with st.expander("Adicionar Novo PC"):
 
 st.markdown("---")
 
-# --- FORMULÁRIO DE AGENDAMENTO (CONDICIONAL) ---
 placeholder_agendamento = st.empty()
+
 if st.session_state.mostrar_form_agendar:
     with placeholder_agendamento.container():
         st.markdown("### Agendar Uso")
@@ -96,9 +59,25 @@ if st.session_state.mostrar_form_agendar:
                 data_hora_inicio = datetime.datetime.combine(data_inicio, hora_inicio)
                 data_hora_fim = datetime.datetime.combine(data_fim, hora_fim)
                 
-                if data_hora_inicio >= data_hora_fim:
+                # Lógica de validação de agendamento
+                agora = datetime.datetime.now()
+                conflito = False
+                
+                if data_hora_inicio < agora:
+                    st.error("Não é possível agendar uma data no passado.")
+                    conflito = True
+                elif data_hora_inicio >= data_hora_fim:
                     st.error("A data e hora de início devem ser anteriores à data e hora de fim.")
+                    conflito = True
                 else:
+                    for inicio_existente, fim_existente in pc_selecionado.agendamentos:
+                        # Verifica se o novo agendamento se sobrepõe a um existente
+                        if not (data_hora_fim <= inicio_existente or data_hora_inicio >= fim_existente):
+                            st.error("O agendamento se sobrepõe a um agendamento existente.")
+                            conflito = True
+                            break
+
+                if not conflito:
                     pc_selecionado.agendar_uso(data_hora_inicio, data_hora_fim)
                     salvar_dados(st.session_state.pcs)
                     st.success(f"Agendamento para **{pc_selecionado.nome}** confirmado de {data_hora_inicio.strftime('%d/%m/%Y %H:%M')} a {data_hora_fim.strftime('%d/%m/%Y %H:%M')}!")
@@ -122,15 +101,16 @@ else:
                 with cols[j]:
                     pc = st.session_state.pcs[i + j]
                     
-                    cor = "green"
+                    cor, status_text = "green", "Disponível"
                     if pc.em_manutencao:
                         cor = "blue"
-                    elif pc.esta_ocupado() == "ocupado":
-                        cor = "red"
-                    elif pc.esta_ocupado() == "quase_ocupado":
-                        cor = "yellow"
+                        status_text = "Em Manutenção"
+                    else:
+                        cor_status, status_info = pc.esta_ocupado()
+                        cor = "green" if cor_status == "disponivel" else ("red" if cor_status == "ocupado" else "yellow")
+                        status_text = status_info
 
-                    card_style = f"background-color: {cor}; padding: 15px; border-radius: 10px; min-height: 250px; display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 20px;"
+                    card_style = f"background-color: {cor}; padding: 15px; border-radius: 10px; min-height: 200px; display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 20px; color: black;"
 
                     st.markdown(
                         f"""
@@ -145,16 +125,14 @@ else:
                     )
                     
                     with st.container():
-                        st.markdown(f"**Status:** {'Em Manutenção' if pc.em_manutencao else 'Disponível'}")
+                        st.markdown(f"**Status:** {status_text}")
                         
-                        if pc.data_ocupado:
-                            inicio = pc.data_ocupado[0].strftime('%d/%m/%Y %H:%M')
-                            fim = pc.data_ocupado[1].strftime('%d/%m/%Y %H:%M')
-                            st.markdown(f"**Próximo Agendamento:**")
-                            st.markdown(f"**Início:** {inicio}")
-                            st.markdown(f"**Fim:** {fim}")
+                        st.markdown("**Próximos Agendamentos:**")
+                        if pc.agendamentos:
+                            for inicio, fim in pc.agendamentos:
+                                st.markdown(f"- **Início:** {inicio.strftime('%d/%m %H:%M')} | **Fim:** {fim.strftime('%d/%m %H:%M')}")
                         else:
-                            st.markdown("**Próximo Agendamento:** N/A")
+                            st.markdown("Nenhum agendamento futuro.")
                         
                         st.checkbox("Em Manutenção", value=pc.em_manutencao, key=f"manutencao_{i+j}", on_change=toggle_manutencao, args=(i+j,))
                         
