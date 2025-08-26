@@ -1,11 +1,10 @@
 import datetime
 
 class PC_Card:
-    def __init__(self, url, nome, gpu, modelo):
+    def __init__(self, url, nome, gpu):
         self.url = url
         self.nome = nome
         self.gpu = gpu
-        self.modelo = modelo
         self.data_ocupado = None
         self.em_manutencao = False
 
@@ -32,7 +31,6 @@ class PC_Card:
             "url": self.url,
             "nome": self.nome,
             "gpu": self.gpu,
-            "modelo": self.modelo,
             "data_ocupado": [d.isoformat() for d in self.data_ocupado] if self.data_ocupado else None,
             "em_manutencao": self.em_manutencao
         }
@@ -40,7 +38,7 @@ class PC_Card:
     @classmethod
     def from_dict(cls, data):
         data_ocupado_dt = [datetime.datetime.fromisoformat(d) for d in data["data_ocupado"]] if data["data_ocupado"] else None
-        pc = cls(data["url"], data["nome"], data["gpu"], data["modelo"])
+        pc = cls(data["url"], data["nome"], data["gpu"])
         pc.data_ocupado = data_ocupado_dt
         pc.em_manutencao = data["em_manutencao"]
         return pc

@@ -22,8 +22,8 @@ def salvar_dados(pcs):
         json.dump([pc.to_dict() for pc in pcs], f, indent=4)
 
 # --- FUNÇÕES AUXILIARES PARA MANIPULAÇÃO ---
-def adicionar_pc(url, nome, gpu, modelo):
-    novo_pc = PC_Card(url, nome, gpu, modelo)
+def adicionar_pc(url, nome, gpu):
+    novo_pc = PC_Card(url, nome, gpu)
     st.session_state.pcs.append(novo_pc)
     salvar_dados(st.session_state.pcs)
 
@@ -59,11 +59,10 @@ with st.expander("Adicionar Novo PC"):
         url = st.text_input("URL do PC")
         nome = st.text_input("Nome do PC")
         gpu = st.text_input("GPU")
-        modelo = st.text_input("Modelo")
         submit_button = st.form_submit_button("Criar Card")
 
     if submit_button and nome:
-        adicionar_pc(url, nome, gpu, modelo)
+        adicionar_pc(url, nome, gpu)
         st.success(f"PC '{nome}' adicionado com sucesso!")
         st.rerun()
 
@@ -140,7 +139,6 @@ else:
                                 <h4>{pc.nome}</h4>
                                 <p><strong>URL:</strong> {pc.url}</p>
                                 <p><strong>GPU:</strong> {pc.gpu}</p>
-                                <p><strong>Modelo:</strong> {pc.modelo}</p>
                             </div>
                         </div>
                         """, unsafe_allow_html=True
