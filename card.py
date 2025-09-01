@@ -13,7 +13,7 @@ class PC_Card:
         self.agendamentos.append((data_inicio, data_fim))
         self.agendamentos.sort() # Mantém os agendamentos em ordem cronológica
 
-    def esta_ocupado(self):
+    def esta_ocupado(self, agora):
         """Verifica o status atual do PC e o próximo agendamento."""
         agora = datetime.datetime.now()
         uma_hora = datetime.timedelta(hours=1)
