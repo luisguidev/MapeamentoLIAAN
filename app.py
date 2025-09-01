@@ -52,8 +52,10 @@ else:
                         cor = "blue"
                         status_text = "Em Manutenção"
                     else:
-                        cor_status, status_info = pc.esta_ocupado()
-                        
+                        fuso_horario_brasil = pytz.timezone('America/Sao_Paulo')
+                        agora = datetime.datetime.now(fuso_horario_brasil)
+                        cor_status, status_info = pc.esta_ocupado(agora)
+
                         if cor_status == "ocupado":
                             cor = "red"
                             status_text = "Ocupado agora"
@@ -114,9 +116,7 @@ else:
                                         data_hora_inicio = datetime.datetime.combine(data_inicio, hora_inicio)
                                         data_hora_fim = datetime.datetime.combine(data_fim, hora_fim)
                                         
-                                        fuso_horario_brasil = pytz.timezone('America/Sao_Paulo')
-
-                                        agora = datetime.datetime.now(fuso_horario_brasil)
+                                        agora = datetime.datetime.now()
                                         conflito = False
                                         
                                         if data_hora_inicio < agora:
@@ -137,5 +137,4 @@ else:
                                             salvar_dados(st.session_state.pcs)
                                             st.success(f"Agendamento para **{pc.nome}** confirmado de {data_hora_inicio.strftime('%d/%m/%Y %H:%M')} a {data_hora_fim.strftime('%d/%m/%Y %H:%M')}!")
                                             st.rerun()
-
                         
