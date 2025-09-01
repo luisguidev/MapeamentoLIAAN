@@ -10,8 +10,7 @@ st.set_page_config(layout="wide")
 st.title("Visualizador de Planilhas")
 
 
-link_planilha = os.getenv("GSpage")
-
+link_planilha = st.secrets["GSpage"]
 
 if link_planilha:
     try:
