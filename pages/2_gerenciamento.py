@@ -16,7 +16,7 @@ st.title("Área de Gerenciamento")
 
 # Acesso à lista de usuários autorizados
 if "gerenciamento" in st.secrets:
-    usuarios_autorizados = st.secrets["gerenciamento"]["usuarios"]
+    usuarios_autorizados = st.secrets["gerenciamento"]["password"]
 else:
     usuarios_autorizados = []
 
