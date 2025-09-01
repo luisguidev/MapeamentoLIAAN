@@ -15,7 +15,6 @@ class PC_Card:
 
     def esta_ocupado(self, agora):
         """Verifica o status atual do PC e o próximo agendamento."""
-        agora = datetime.datetime.now()
         uma_hora = datetime.timedelta(hours=1)
         
         proximo_agendamento = None
