@@ -140,7 +140,7 @@ else:
                                         if pc.agendamentos:
                                             agendamentos_a_remover = st.multiselect(
                                                 "Selecione agendamentos para remover:",
-                                                options=[f"{inicio.strftime('%d/%m/%Y %H:%M')} - {fim.strftime('%d/%m/%Y %H:%M')}" for inicio, fim in pc.agendamentos],
+                                                options=[f"{inicio.strftime('%d/%m/%Y %H:%M')} - {fim.strftime('%d/%m/%Y %H:%M')}" for inicio, fim, _ in pc.agendamentos:],
                                                 key=f"remover_agendamentos_{i+j}"
                                             )
                                         else:
@@ -155,7 +155,7 @@ else:
                                             pc.gpu = nova_gpu
                                             
                                             if pc.agendamentos and agendamentos_a_remover:
-                                                agendamentos_atuais_str = [f"{inicio.strftime('%d/%m/%Y %H:%M')} - {fim.strftime('%d/%m/%Y %H:%M')}" for inicio, fim in pc.agendamentos]
+                                                agendamentos_atuais_str = [f"{inicio.strftime('%d/%m/%Y %H:%M')} - {fim.strftime('%d/%m/%Y %H:%M')}" for inicio, fim, _ in pc.agendamentos:]
                                                 novos_agendamentos = [pc.agendamentos[k] for k, item in enumerate(agendamentos_atuais_str) if item not in agendamentos_a_remover]
                                                 pc.agendamentos = novos_agendamentos
                                             
