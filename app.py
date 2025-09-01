@@ -18,22 +18,6 @@ if "pcs" not in st.session_state:
 if "mostrar_form_agendar" not in st.session_state:
     st.session_state.mostrar_form_agendar = False
 
-# with st.expander("Adicionar Novo PC"):
-#     with st.form("form_novo_pc", clear_on_submit=True):
-#         url = st.text_input("URL do PC")
-#         nome = st.text_input("Nome do PC")
-#         gpu = st.text_input("GPU")
-#         submit_button = st.form_submit_button("Criar Card")
-
-#     if submit_button and nome:
-#         adicionar_pc(url, nome, gpu)
-#         st.success(f"PC '{nome}' adicionado com sucesso!")
-#         st.rerun()
-
-st.markdown("---")
-
-placeholder_agendamento = st.empty()
-
 # --- EXIBIÇÃO DOS CARDS ---
 st.header("Cards de PCs")
 if not st.session_state.pcs:
@@ -47,13 +31,15 @@ else:
                 with cols[j]:
                     pc = st.session_state.pcs[i + j]
                     
+                    # Defina o fuso horário uma única vez
+                    fuso_horario_brasil = pytz.timezone('America/Sao_Paulo')
+                    agora = datetime.datetime.now(fuso_horario_brasil)
+
                     cor, status_text = "green", "Disponível"
                     if pc.em_manutencao:
                         cor = "blue"
                         status_text = "Em Manutenção"
                     else:
-                        fuso_horario_brasil = pytz.timezone('America/Sao_Paulo')
-                        agora = datetime.datetime.now(fuso_horario_brasil)
                         cor_status, status_info = pc.esta_ocupado(agora)
 
                         if cor_status == "ocupado":
@@ -116,16 +102,15 @@ else:
                                         data_hora_inicio = datetime.datetime.combine(data_inicio, hora_inicio)
                                         data_hora_fim = datetime.datetime.combine(data_fim, hora_fim)
                                         
-                                        agora = datetime.datetime.now()
-                                        conflito = False
-                                        
-                                        if data_hora_inicio < agora:
+                                        # Use a variável 'agora' do fuso horário definido
+                                        if data_hora_inicio < agora.replace(tzinfo=None): # Remove o tzinfo para comparar com um datetime naive
                                             st.error("Não é possível agendar uma data no passado.")
                                             conflito = True
                                         elif data_hora_inicio >= data_hora_fim:
                                             st.error("A data e hora de início devem ser anteriores à data e hora de fim.")
                                             conflito = True
                                         else:
+                                            conflito = False
                                             for inicio_existente, fim_existente in pc.agendamentos:
                                                 if not (data_hora_fim <= inicio_existente or data_hora_inicio >= fim_existente):
                                                     st.error("O agendamento se sobrepõe a um agendamento existente.")
@@ -137,4 +122,3 @@ else:
                                             salvar_dados(st.session_state.pcs)
                                             st.success(f"Agendamento para **{pc.nome}** confirmado de {data_hora_inicio.strftime('%d/%m/%Y %H:%M')} a {data_hora_fim.strftime('%d/%m/%Y %H:%M')}!")
                                             st.rerun()
-                        
