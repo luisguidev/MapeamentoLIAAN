@@ -101,18 +101,27 @@ else:
                                         if not nome_agendador:
                                             st.error("Por favor, insira seu nome.")
                                         else:
+                                            # Pega a data e hora do formulário
                                             data_hora_inicio = datetime.datetime.combine(data_inicio, hora_inicio)
                                             data_hora_fim = datetime.datetime.combine(data_fim, hora_fim)
                                             
-                                            agora = datetime.datetime.now()
+                                            # Define o fuso horário para a verificação, se a app já não fez
+                                            fuso_horario_brasil = pytz.timezone('America/Sao_Paulo')
+                                            agora = datetime.datetime.now(fuso_horario_brasil).replace(tzinfo=None) # Sem tzinfo para comparação
+                                            
                                             conflito = False
                                             
+                                            # Validação 1: Data no passado
                                             if data_hora_inicio < agora:
                                                 st.error("Não é possível agendar uma data no passado.")
                                                 conflito = True
+                                            
+                                            # Validação 2: Datas de início e fim incorretas
                                             elif data_hora_inicio >= data_hora_fim:
                                                 st.error("A data e hora de início devem ser anteriores à data e hora de fim.")
                                                 conflito = True
+                                            
+                                            # Validação 3: Conflito com agendamentos existentes
                                             else:
                                                 for inicio_existente, fim_existente, _ in pc.agendamentos:
                                                     if not (data_hora_fim <= inicio_existente or data_hora_inicio >= fim_existente):
@@ -125,7 +134,3 @@ else:
                                                 salvar_dados(st.session_state.pcs)
                                                 st.success(f"Agendamento para **{pc.nome}** confirmado para {nome_agendador}!")
                                                 st.rerun()
-
-                        with col_btn2:
-                            if st.button("Deletar", key=f"delete_{i+j}"):
-                                deletar_pc(i+j)
