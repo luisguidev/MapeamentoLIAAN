@@ -125,7 +125,7 @@ else:
                             col_btn1, col_btn2 = st.columns(2)
                             
                             # Botão de edição dentro de uma coluna separada para organização
-                            with col_btn2:
+                            with col_btn1:
                                 with st.popover("Editar"):
                                     st.markdown(f"**Editando:** {pc.nome}")
                                     
