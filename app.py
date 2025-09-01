@@ -3,6 +3,7 @@ import streamlit as st
 import datetime
 import json
 import os
+import pytz
 
 from card import PC_Card 
 from functions import *
@@ -113,7 +114,9 @@ else:
                                         data_hora_inicio = datetime.datetime.combine(data_inicio, hora_inicio)
                                         data_hora_fim = datetime.datetime.combine(data_fim, hora_fim)
                                         
-                                        agora = datetime.datetime.now()
+                                        fuso_horario_brasil = pytz.timezone('America/Sao_Paulo')
+
+                                        agora = datetime.datetime.now(fuso_horario_brasil)
                                         conflito = False
                                         
                                         if data_hora_inicio < agora:
