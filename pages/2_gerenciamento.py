@@ -115,7 +115,7 @@ else:
                             
                             st.markdown("**Próximos Agendamentos:**")
                             if pc.agendamentos:
-                                for inicio, fim in pc.agendamentos:
+                                for inicio, fim, _ in pc.agendamentos:
                                     st.markdown(f"- **Início:** {inicio.strftime('%d/%m %H:%M')} | **Fim:** {fim.strftime('%d/%m %H:%M')}")
                             else:
                                 st.markdown("Nenhum agendamento futuro.")
