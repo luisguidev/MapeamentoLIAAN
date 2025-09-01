@@ -8,10 +8,9 @@ class PC_Card:
         self.agendamentos = []  # Agora é uma lista de tuplas (data_inicio, data_fim)
         self.em_manutencao = False
 
-    def agendar_uso(self, data_inicio, data_fim):
-        # O agendamento deve ser uma tupla para facilitar a ordenação e salvamento
-        self.agendamentos.append((data_inicio, data_fim))
-        self.agendamentos.sort() # Mantém os agendamentos em ordem cronológica
+    def agendar_uso(self, data_inicio, data_fim, nome_da_pessoa):
+        self.agendamentos.append((data_inicio, data_fim, nome_da_pessoa))
+        self.agendamentos.sort()
 
     def esta_ocupado(self, agora):
         """Verifica o status atual do PC e o próximo agendamento."""
@@ -42,16 +41,16 @@ class PC_Card:
             "url": self.url,
             "nome": self.nome,
             "gpu": self.gpu,
-            "agendamentos": [(d[0].isoformat(), d[1].isoformat()) for d in self.agendamentos],
+            "agendamentos": [(d[0].isoformat(), d[1].isoformat(), d[2]) for d in self.agendamentos],
             "em_manutencao": self.em_manutencao
         }
 
     @classmethod
     def from_dict(cls, data):
         pc = cls(data["url"], data["nome"], data["gpu"])
-        for inicio_str, fim_str in data["agendamentos"]:
+        for inicio_str, fim_str, nome_agendador in data["agendamentos"]:
             inicio = datetime.datetime.fromisoformat(inicio_str)
             fim = datetime.datetime.fromisoformat(fim_str)
-            pc.agendar_uso(inicio, fim)
+            pc.agendar_uso(inicio, fim, nome_agendador)
         pc.em_manutencao = data["em_manutencao"]
         return pc

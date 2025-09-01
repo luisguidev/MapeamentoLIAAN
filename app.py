@@ -74,12 +74,10 @@ else:
                         
                         st.markdown("**Próximos Agendamentos:**")
                         if pc.agendamentos:
-                            for inicio, fim in pc.agendamentos:
-                                st.markdown(f"- **Início:** {inicio.strftime('%d/%m %H:%M')} | **Fim:** {fim.strftime('%d/%m %H:%M')}")
+                            for inicio, fim, nome_agendador in pc.agendamentos:
+                                st.markdown(f"- **{nome_agendador}:** {inicio.strftime('%d/%m %H:%M')} - {fim.strftime('%d/%m %H:%M')}")
                         else:
                             st.markdown("Nenhum agendamento futuro.")
-                        
-                        st.checkbox("Em Manutenção", value=pc.em_manutencao, key=f"manutencao_{i+j}", on_change=toggle_manutencao, args=(i+j,))
                         
                         col_btn1, col_btn2 = st.columns(2)
                         
@@ -88,6 +86,7 @@ else:
                                 st.markdown(f"**Agendando para:** {pc.nome}")
                                 
                                 with st.form(key=f"form_agendar_{i+j}", clear_on_submit=False):
+                                    nome_agendador = st.text_input("Seu Nome:")
                                     col_form1, col_form2 = st.columns(2)
                                     with col_form1:
                                         data_inicio = st.date_input("Data de Início", key=f"data_inicio_form_{i+j}", value=datetime.date.today())
@@ -99,26 +98,34 @@ else:
                                     confirmar_btn = st.form_submit_button("Confirmar Agendamento")
                                     
                                     if confirmar_btn:
-                                        data_hora_inicio = datetime.datetime.combine(data_inicio, hora_inicio)
-                                        data_hora_fim = datetime.datetime.combine(data_fim, hora_fim)
-                                        
-                                        # Use a variável 'agora' do fuso horário definido
-                                        if data_hora_inicio < agora.replace(tzinfo=None): # Remove o tzinfo para comparar com um datetime naive
-                                            st.error("Não é possível agendar uma data no passado.")
-                                            conflito = True
-                                        elif data_hora_inicio >= data_hora_fim:
-                                            st.error("A data e hora de início devem ser anteriores à data e hora de fim.")
-                                            conflito = True
+                                        if not nome_agendador:
+                                            st.error("Por favor, insira seu nome.")
                                         else:
+                                            data_hora_inicio = datetime.datetime.combine(data_inicio, hora_inicio)
+                                            data_hora_fim = datetime.datetime.combine(data_fim, hora_fim)
+                                            
+                                            agora = datetime.datetime.now()
                                             conflito = False
-                                            for inicio_existente, fim_existente in pc.agendamentos:
-                                                if not (data_hora_fim <= inicio_existente or data_hora_inicio >= fim_existente):
-                                                    st.error("O agendamento se sobrepõe a um agendamento existente.")
-                                                    conflito = True
-                                                    break
+                                            
+                                            if data_hora_inicio < agora:
+                                                st.error("Não é possível agendar uma data no passado.")
+                                                conflito = True
+                                            elif data_hora_inicio >= data_hora_fim:
+                                                st.error("A data e hora de início devem ser anteriores à data e hora de fim.")
+                                                conflito = True
+                                            else:
+                                                for inicio_existente, fim_existente, _ in pc.agendamentos:
+                                                    if not (data_hora_fim <= inicio_existente or data_hora_inicio >= fim_existente):
+                                                        st.error("O agendamento se sobrepõe a um agendamento existente.")
+                                                        conflito = True
+                                                        break
 
-                                        if not conflito:
-                                            pc.agendar_uso(data_hora_inicio, data_hora_fim)
-                                            salvar_dados(st.session_state.pcs)
-                                            st.success(f"Agendamento para **{pc.nome}** confirmado de {data_hora_inicio.strftime('%d/%m/%Y %H:%M')} a {data_hora_fim.strftime('%d/%m/%Y %H:%M')}!")
-                                            st.rerun()
+                                            if not conflito:
+                                                pc.agendar_uso(data_hora_inicio, data_hora_fim, nome_agendador)
+                                                salvar_dados(st.session_state.pcs)
+                                                st.success(f"Agendamento para **{pc.nome}** confirmado para {nome_agendador}!")
+                                                st.rerun()
+
+                        with col_btn2:
+                            if st.button("Deletar", key=f"delete_{i+j}"):
+                                deletar_pc(i+j)
