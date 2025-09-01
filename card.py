@@ -17,24 +17,25 @@ class PC_Card:
         uma_hora = datetime.timedelta(hours=1)
         
         proximo_agendamento = None
-        for inicio, fim in self.agendamentos:
+        # Use inicio, fim e _ para ignorar o nome da pessoa
+        for inicio, fim, _ in self.agendamentos:
             # 1. Checa se o PC está ocupado agora
             if inicio <= agora < fim:
                 return "ocupado", "Ocupado agora"
 
             # 2. Encontra o próximo agendamento válido no futuro
             if inicio > agora and (proximo_agendamento is None or inicio < proximo_agendamento[0]):
-                proximo_agendamento = (inicio, fim)
+                proximo_agendamento = (inicio, fim, _)
         
         # 3. Define a cor com base no próximo agendamento
         if proximo_agendamento:
             proximo_inicio = proximo_agendamento[0]
             if proximo_inicio - agora <= uma_hora:
-                return "quase_ocupado", f"Ocupado em {proximo_inicio.strftime('%H:%M')}" # Card amarelo
+                return "quase_ocupado", f"Ocupado em {proximo_inicio.strftime('%H:%M')}"
             else:
-                return "disponivel", f"Próximo em {proximo_inicio.strftime('%d/%m %H:%M')}" # Card verde
+                return "disponivel", f"Próximo em {proximo_inicio.strftime('%d/%m %H:%M')}"
         
-        return "disponivel", "N/A" # Card verde
+        return "disponivel", "N/A"
 
     def to_dict(self):
         return {
