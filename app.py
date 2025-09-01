@@ -17,17 +17,17 @@ if "pcs" not in st.session_state:
 if "mostrar_form_agendar" not in st.session_state:
     st.session_state.mostrar_form_agendar = False
 
-with st.expander("Adicionar Novo PC"):
-    with st.form("form_novo_pc", clear_on_submit=True):
-        url = st.text_input("URL do PC")
-        nome = st.text_input("Nome do PC")
-        gpu = st.text_input("GPU")
-        submit_button = st.form_submit_button("Criar Card")
+# with st.expander("Adicionar Novo PC"):
+#     with st.form("form_novo_pc", clear_on_submit=True):
+#         url = st.text_input("URL do PC")
+#         nome = st.text_input("Nome do PC")
+#         gpu = st.text_input("GPU")
+#         submit_button = st.form_submit_button("Criar Card")
 
-    if submit_button and nome:
-        adicionar_pc(url, nome, gpu)
-        st.success(f"PC '{nome}' adicionado com sucesso!")
-        st.rerun()
+#     if submit_button and nome:
+#         adicionar_pc(url, nome, gpu)
+#         st.success(f"PC '{nome}' adicionado com sucesso!")
+#         st.rerun()
 
 st.markdown("---")
 
