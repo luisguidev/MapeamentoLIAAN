@@ -33,61 +33,6 @@ st.markdown("---")
 
 placeholder_agendamento = st.empty()
 
-if st.session_state.mostrar_form_agendar:
-    with placeholder_agendamento.container():
-        st.markdown("### Agendar Uso")
-        pc_index = st.session_state.agendando_pc_indice
-        pc_selecionado = st.session_state.pcs[pc_index]
-        
-        with st.form(key=f"form_agendar_{pc_index}", clear_on_submit=False):
-            st.markdown(f"**Agendando para:** {pc_selecionado.nome}")
-            col1, col2 = st.columns(2)
-            with col1:
-                data_inicio = st.date_input("Data de Início", key=f"data_inicio_form_{pc_index}", value=datetime.date.today())
-                hora_inicio = st.time_input("Hora de Início", key=f"hora_inicio_form_{pc_index}", value=datetime.time(9, 0))
-            with col2:
-                data_fim = st.date_input("Data de Fim", key=f"data_fim_form_{pc_index}", value=datetime.date.today())
-                hora_fim = st.time_input("Hora de Fim", key=f"hora_fim_form_{pc_index}", value=datetime.time(17, 0))
-
-            col_btn1, col_btn2 = st.columns([1, 1])
-            with col_btn1:
-                confirmar_btn = st.form_submit_button("Confirmar Agendamento")
-            with col_btn2:
-                cancelar_btn = st.form_submit_button("Cancelar")
-
-            if confirmar_btn:
-                data_hora_inicio = datetime.datetime.combine(data_inicio, hora_inicio)
-                data_hora_fim = datetime.datetime.combine(data_fim, hora_fim)
-                
-                # Lógica de validação de agendamento
-                agora = datetime.datetime.now()
-                conflito = False
-                
-                if data_hora_inicio < agora:
-                    st.error("Não é possível agendar uma data no passado.")
-                    conflito = True
-                elif data_hora_inicio >= data_hora_fim:
-                    st.error("A data e hora de início devem ser anteriores à data e hora de fim.")
-                    conflito = True
-                else:
-                    for inicio_existente, fim_existente in pc_selecionado.agendamentos:
-                        # Verifica se o novo agendamento se sobrepõe a um existente
-                        if not (data_hora_fim <= inicio_existente or data_hora_inicio >= fim_existente):
-                            st.error("O agendamento se sobrepõe a um agendamento existente.")
-                            conflito = True
-                            break
-
-                if not conflito:
-                    pc_selecionado.agendar_uso(data_hora_inicio, data_hora_fim)
-                    salvar_dados(st.session_state.pcs)
-                    st.success(f"Agendamento para **{pc_selecionado.nome}** confirmado de {data_hora_inicio.strftime('%d/%m/%Y %H:%M')} a {data_hora_fim.strftime('%d/%m/%Y %H:%M')}!")
-                    fechar_form_agendar()
-                    st.rerun()
-            
-            if cancelar_btn:
-                fechar_form_agendar()
-                st.rerun()
-
 # --- EXIBIÇÃO DOS CARDS ---
 st.header("Cards de PCs")
 if not st.session_state.pcs:
@@ -100,7 +45,7 @@ else:
             if i + j < num_cards:
                 with cols[j]:
                     pc = st.session_state.pcs[i + j]
-
+                    
                     cor, status_text = "green", "Disponível"
                     if pc.em_manutencao:
                         cor = "blue"
@@ -111,14 +56,15 @@ else:
                         if cor_status == "ocupado":
                             cor = "red"
                             status_text = "Ocupado agora"
-                        
-                        if cor_status == "quase_ocupado":
+                        elif cor_status == "quase_ocupado":
                             cor = "yellow"
                             status_text = status_info
-                        
-                        else:
+                        else: # "disponivel"
                             cor = "green"
-                            status_text = status_info
+                            if status_info == "N/A":
+                                status_text = "Disponível"
+                            else:
+                                status_text = status_info
 
                     card_style = f"background-color: {cor}; padding: 15px; border-radius: 10px; min-height: 250px; display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 20px; color: black;"
 
@@ -149,11 +95,9 @@ else:
                         col_btn1, col_btn2 = st.columns(2)
                         
                         with col_btn1:
-                            # O st.popover cria o pop-up
                             with st.popover("Agendar Uso", help="Clique para agendar um período de uso."):
                                 st.markdown(f"**Agendando para:** {pc.nome}")
                                 
-                                # Formulário dentro do popover para evitar reruns indesejados
                                 with st.form(key=f"form_agendar_{i+j}", clear_on_submit=False):
                                     col_form1, col_form2 = st.columns(2)
                                     with col_form1:
@@ -191,6 +135,4 @@ else:
                                             st.success(f"Agendamento para **{pc.nome}** confirmado de {data_hora_inicio.strftime('%d/%m/%Y %H:%M')} a {data_hora_fim.strftime('%d/%m/%Y %H:%M')}!")
                                             st.rerun()
 
-                        with col_btn2:
-                            if st.button("Deletar", key=f"delete_{i+j}"):
-                                deletar_pc(i+j)
+                        

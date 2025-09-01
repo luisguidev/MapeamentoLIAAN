@@ -1,1 +1,37 @@
-[]
+[
+    {
+        "url": "http://192.168.68.105:1234/v1",
+        "nome": "liaan-02",
+        "gpu": "A6000",
+        "agendamentos": [],
+        "em_manutencao": false
+    },
+    {
+        "url": "http://192.168.68.109:1234/v1",
+        "nome": "liaan-04",
+        "gpu": "RTX 4090",
+        "agendamentos": [],
+        "em_manutencao": false
+    },
+    {
+        "url": "http://192.168.68.106:1234/v1",
+        "nome": "caminha's pc",
+        "gpu": "3090",
+        "agendamentos": [],
+        "em_manutencao": false
+    },
+    {
+        "url": "http://192.168.68.118:1234/v1",
+        "nome": "liaan-09",
+        "gpu": "RTX 5090",
+        "agendamentos": [],
+        "em_manutencao": false
+    },
+    {
+        "url": "http://192.168.68.127:1234/v1",
+        "nome": "liaan-10",
+        "gpu": "RTX 5090",
+        "agendamentos": [],
+        "em_manutencao": false
+    }
+]
