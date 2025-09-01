@@ -81,7 +81,7 @@ else:
                         else:
                             fuso_horario_brasil = pytz.timezone('America/Sao_Paulo')
                             agora = datetime.datetime.now(fuso_horario_brasil)
-                            cor_status, status_info = pc.esta_ocupado(agora)
+                            cor_status, status_info = pc.esta_ocupado(agora.replace(tzinfo=None))
                             
                             if cor_status == "ocupado":
                                 cor = "red"
