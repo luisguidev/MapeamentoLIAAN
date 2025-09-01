@@ -40,7 +40,7 @@ else:
                         cor = "blue"
                         status_text = "Em Manutenção"
                     else:
-                        cor_status, status_info = pc.esta_ocupado(agora)
+                        cor_status, status_info = pc.esta_ocupado(agora.replace(tzinfo=None))
 
                         if cor_status == "ocupado":
                             cor = "red"

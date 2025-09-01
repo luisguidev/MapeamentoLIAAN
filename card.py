@@ -21,7 +21,7 @@ class PC_Card:
         for inicio, fim in self.agendamentos:
             # 1. Checa se o PC está ocupado agora
             if inicio <= agora < fim:
-                return "ocupado", "Ocupado agora" # Card vermelho
+                return "ocupado", "Ocupado agora"
 
             # 2. Encontra o próximo agendamento válido no futuro
             if inicio > agora and (proximo_agendamento is None or inicio < proximo_agendamento[0]):
