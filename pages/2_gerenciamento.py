@@ -31,7 +31,7 @@ if "pcs" not in st.session_state:
 if not st.session_state.logado:
     # --- Interface de Login ---
     st.info("Esta é uma área restrita. Por favor, faça login para continuar.")
-    email_digitado = st.text_input("Digite seu e-mail:")
+    email_digitado = st.text_input("Digite a senha de adminstrador:")
     
     if st.button("Entrar"):
         if email_digitado in usuarios_autorizados:
@@ -43,7 +43,7 @@ if not st.session_state.logado:
             st.error("E-mail não autorizado.")
 else:
     # --- Conteúdo da Página de Gerenciamento (após o login) ---
-    st.success(f"Bem-vindo, {st.session_state.email}!")
+    st.success(f"Bem-vindo, SUPER USUÁRIO!")
     st.markdown("---")
     
     # Adicionar Novo PC
