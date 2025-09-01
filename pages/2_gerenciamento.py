@@ -115,8 +115,8 @@ else:
                             
                             st.markdown("**Próximos Agendamentos:**")
                             if pc.agendamentos:
-                                for inicio, fim, _ in pc.agendamentos:
-                                    st.markdown(f"- **Início:** {inicio.strftime('%d/%m %H:%M')} | **Fim:** {fim.strftime('%d/%m %H:%M')}")
+                                for inicio, fim, nome_agendador in pc.agendamentos:
+                                    st.markdown(f"- **{nome_agendador}:** {inicio.strftime('%d/%m %H:%M')} | **Fim:** {fim.strftime('%d/%m %H:%M')}")
                             else:
                                 st.markdown("Nenhum agendamento futuro.")
                             
@@ -165,7 +165,3 @@ else:
 
                                         if deletar_card_btn:
                                             deletar_pc(i+j)
-
-    if st.button("Sair"):
-        st.session_state.logado = False
-        st.rerun()
